@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\CashSession;
 use App\Models\CustomerTransaction;
+use App\Models\SupplierTransaction;
 use App\Models\Payment;
 use App\Models\Sale;
 use Filament\Notifications\Notification;
@@ -81,6 +82,13 @@ class CashSessionScreen extends Page
         $debtCash = (float) ($debtPayments['cash'] ?? 0);
         $debtOther = (float) $debtPayments->except('cash')->sum();
 
+        // دفعات الموردين النقدية المخصومة من الدرج في هذه الجلسة (مخزنة بقيمة سالبة)
+        $supplierCash = abs((float) SupplierTransaction::query()
+            ->where('cash_session_id', $session->id)
+            ->where('type', 'payment')
+            ->where('payment_method', 'cash')
+            ->sum('amount'));
+
         return [
             'count' => Sale::where('cash_session_id', $session->id)->count(),
             'total' => (float) Sale::where('cash_session_id', $session->id)->sum('total'),
@@ -88,7 +96,8 @@ class CashSessionScreen extends Page
             'others' => $byMethod->except('cash')->map(fn ($v) => (float) $v)->all(),
             'debt_cash' => $debtCash,
             'debt_other' => $debtOther,
-            'expected' => (float) $session->opening_balance + $cash + $debtCash,
+            'supplier_cash' => $supplierCash,
+            'expected' => (float) $session->opening_balance + $cash + $debtCash - $supplierCash,
         ];
     }
 

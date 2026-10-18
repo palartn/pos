@@ -61,6 +61,13 @@
                         @endif
                     @endforeach
 
+                    @if ($st['supplier_cash'] > 0)
+                        <div style="{{ $card }}">
+                            <div style="font-size:.8rem; opacity:.7;">دفعات الموردين (نقدي من الدرج)</div>
+                            <div style="font-size:1.25rem; font-weight:700;">{{ \App\Support\Money::format($st['supplier_cash']) }}</div>
+                        </div>
+                    @endif
+
                     @if ($st['debt_cash'] > 0)
                         <div style="{{ $card }}">
                             <div style="font-size:.8rem; opacity:.7;">تحصيل ديون (نقدي)</div>
@@ -77,7 +84,7 @@
                 </div>
 
                 <div style="{{ $card }} margin-top:.75rem; border-color:#16a34a;">
-                    <div style="font-size:.8rem; opacity:.7;">النقد المتوقع في الدرج (الافتتاحي + المبيعات النقدية + تحصيل الديون النقدي)</div>
+                    <div style="font-size:.8rem; opacity:.7;">النقد المتوقع في الدرج (الافتتاحي + المبيعات النقدية + تحصيل الديون − دفعات الموردين النقدية)</div>
                     <div style="font-size:1.5rem; font-weight:700;">{{ \App\Support\Money::format($st['expected']) }}</div>
                 </div>
             </x-filament::section>
