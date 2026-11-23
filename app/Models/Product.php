@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -28,8 +29,22 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class);
+    }
+
+    /** إجمالي الكمية في كل المخازن (عمود stock يُحدَّث تلقائياً من StockService) */
     public function isLowStock(): bool
     {
         return (float) $this->stock <= (float) $this->min_stock;
+    }
+
+    /** كمية المخزن المحمَّل في علاقة stocks (يُستخدم في شاشة POS) */
+    public function warehouseQty(): float
+    {
+        return $this->relationLoaded('stocks')
+            ? (float) ($this->stocks->first()->quantity ?? 0)
+            : (float) $this->stock;
     }
 }

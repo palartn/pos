@@ -2,11 +2,15 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\LedgerType;
 use App\Enums\PaymentMethod;
+use App\Models\CashierShift;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Warehouse;
+use App\Services\StockService;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
@@ -61,13 +65,28 @@ class PosScreen extends Page
     #[Computed]
     public function customers(): Collection
     {
-        return Customer::orderBy('name')->get(['id', 'name', 'balance']);
+        return Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'balance']);
+    }
+
+    #[Computed]
+    public function shift(): ?CashierShift
+    {
+        return CashierShift::openFor(auth()->id());
+    }
+
+    #[Computed]
+    public function defaultWarehouseId(): int
+    {
+        return Warehouse::defaultOrCreate()->id;
     }
 
     #[Computed]
     public function products(): Collection
     {
+        $warehouseId = $this->defaultWarehouseId;
+
         return Product::query()
+            ->with(['stocks' => fn ($q) => $q->where('warehouse_id', $warehouseId)])
             ->where('is_active', true)
             ->when($this->categoryId, fn ($q) => $q->where('category_id', $this->categoryId))
             ->when($this->search !== '', function ($q) {
@@ -222,10 +241,19 @@ class PosScreen extends Page
             return;
         }
 
+        $shift = $this->shift;
+
+        if (! $shift) {
+            Notification::make()->title('افتح وردية أولاً من قائمة «ورديات الكاشير»')->danger()->send();
+
+            return;
+        }
+
         $method = PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Cash;
 
         try {
-            $sale = DB::transaction(function () use ($method) {
+            $sale = DB::transaction(function () use ($method, $shift) {
+                $warehouse = Warehouse::defaultOrCreate();
                 $products = Product::whereIn('id', array_keys($this->cart))->lockForUpdate()->get()->keyBy('id');
 
                 // الأسعار تُقرأ من قاعدة البيانات وليس من المتصفح
@@ -238,10 +266,6 @@ class PosScreen extends Page
 
                     if (! $product || $qty <= 0) {
                         continue;
-                    }
-
-                    if ((float) $product->stock < $qty) {
-                        throw new RuntimeException("الكمية غير كافية للصنف: {$product->name} (المتوفر {$product->stock})");
                     }
 
                     $lineTotal = round($qty * (float) $product->retail_price, 2);
@@ -267,10 +291,21 @@ class PosScreen extends Page
                     throw new RuntimeException('اختر عميلاً لتسجيل المبلغ المتبقي كدين');
                 }
 
+                if ($due > 0) {
+                    $customer = Customer::whereKey($this->customerId)->lockForUpdate()->firstOrFail();
+
+                    if ((float) $customer->credit_limit > 0
+                        && (float) $customer->balance + $due > (float) $customer->credit_limit) {
+                        throw new RuntimeException('تجاوز سقف الدين للعميل: ' . $customer->name);
+                    }
+                }
+
                 $sale = Sale::create([
                     'invoice_number' => 'TMP-' . uniqid(),
                     'user_id' => auth()->id(),
                     'customer_id' => $this->customerId,
+                    'warehouse_id' => $warehouse->id,
+                    'shift_id' => $shift->id,
                     'subtotal' => $subtotal,
                     'discount' => $discount,
                     'total' => $total,
@@ -293,11 +328,16 @@ class PosScreen extends Page
                         'total' => $l['lineTotal'],
                     ]);
 
-                    $l['product']->decrement('stock', $l['qty']);
+                    app(StockService::class)->adjust(
+                        $l['product']->id, $warehouse->id, -$l['qty'], 'sale', $sale->invoice_number
+                    );
                 }
 
                 if ($due > 0) {
-                    Customer::whereKey($this->customerId)->increment('balance', $due);
+                    Customer::findOrFail($this->customerId)->addTransaction(LedgerType::Debt, $due, [
+                        'sale_id' => $sale->id,
+                        'description' => 'فاتورة ' . $sale->invoice_number,
+                    ]);
                 }
 
                 return $sale;

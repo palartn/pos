@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->font('Cairo')
             ->colors(['primary' => Color::Emerald])
             ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups(['الخزينة والورديات', 'المشتريات', 'العملاء والموردون', 'المخزون'])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/pos.css') . '?v=' . (@filemtime(public_path('css/pos.css')) ?: 1) . '">',

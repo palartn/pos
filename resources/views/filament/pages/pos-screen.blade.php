@@ -1,4 +1,10 @@
 <x-filament-panels::page>
+    @if (! $this->shift)
+        <div class="pos-alert">
+            <span>لا توجد وردية مفتوحة. افتح وردية قبل بدء البيع.</span>
+            <a href="{{ \App\Filament\Resources\CashierShiftResource::getUrl('index') }}">فتح وردية</a>
+        </div>
+    @endif
 
     <div class="pos"
          x-data
@@ -30,11 +36,11 @@
                     <button type="button" wire:key="p-{{ $product->id }}" wire:click="addProduct({{ $product->id }})" class="pos-product">
                         @if ($product->sold_by_weight)
                             <span class="pos-badge pos-badge--weight">بالوزن</span>
-                        @elseif ($product->isLowStock())
+                        @elseif ($product->warehouseQty() <= (float) $product->min_stock)
                             <span class="pos-badge pos-badge--low">منخفض</span>
                         @endif
                         <span class="pos-product__name">{{ $product->name }}</span>
-                        <span class="pos-product__meta">المخزون: {{ rtrim(rtrim(number_format((float) $product->stock, 3, '.', ''), '0'), '.') }} {{ $product->unit }}</span>
+                        <span class="pos-product__meta">المخزون: {{ rtrim(rtrim(number_format($product->warehouseQty(), 3, '.', ''), '0'), '.') }} {{ $product->unit }}</span>
                         <span class="pos-product__price">₪{{ number_format((float) $product->retail_price, 2) }}</span>
                     </button>
                 @empty
@@ -116,7 +122,7 @@
                 @endif
 
                 <button type="button" class="pos-pay" wire:click="checkout" wire:loading.attr="disabled" wire:target="checkout"
-                        @disabled(empty($cart))>
+                        @disabled(empty($cart) || ! $this->shift)>
                     إتمام البيع — ₪{{ number_format($this->total, 2) }}
                 </button>
             </div>

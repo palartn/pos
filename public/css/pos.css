@@ -149,3 +149,8 @@
 .pos-pay:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
 .pos-due { color: var(--pos-danger); font-weight: 800; }
 .pos-change { color: var(--pos-success); font-weight: 800; }
+
+/* تنبيه عدم وجود وردية */
+.pos-alert { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; padding: .9rem 1.1rem; margin-bottom: 1rem; border-radius: 12px; background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; font-weight: 700; }
+.dark .pos-alert { background: rgba(245, 158, 11, .12); color: #fcd34d; }
+.pos-alert a { color: inherit; text-decoration: underline; }

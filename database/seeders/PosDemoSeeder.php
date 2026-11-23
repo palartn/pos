@@ -5,12 +5,19 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\StockMovement;
+use App\Models\Supplier;
+use App\Models\Warehouse;
+use App\Services\StockService;
 use Illuminate\Database\Seeder;
 
 class PosDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        $warehouse = Warehouse::defaultOrCreate();
+        $stockService = app(StockService::class);
+
         $cats = collect(['خضار وفواكه', 'ألبان وأجبان', 'مشروبات', 'معلبات', 'منظفات', 'مخبوزات'])
             ->mapWithKeys(fn ($n) => [$n => Category::firstOrCreate(['name' => $n])]);
 
@@ -29,7 +36,7 @@ class PosDemoSeeder extends Seeder
         ];
 
         foreach ($rows as [$cat, $name, $barcode, $unit, $weight, $cost, $price, $stock]) {
-            Product::updateOrCreate(
+            $product = Product::updateOrCreate(
                 ['name' => $name],
                 [
                     'category_id' => $cats[$cat]->id,
@@ -38,12 +45,16 @@ class PosDemoSeeder extends Seeder
                     'sold_by_weight' => $weight,
                     'cost_price' => $cost,
                     'retail_price' => $price,
-                    'stock' => $stock,
                     'min_stock' => 10,
                 ]
             );
+
+            if (! StockMovement::where('product_id', $product->id)->exists()) {
+                $stockService->adjust($product->id, $warehouse->id, $stock, 'opening', 'بيانات تجريبية');
+            }
         }
 
         Customer::firstOrCreate(['name' => 'عميل تجريبي'], ['phone' => '0599000000']);
+        Supplier::firstOrCreate(['name' => 'مورد تجريبي'], ['company' => 'شركة تجريبية', 'phone' => '0598000000']);
     }
 }
