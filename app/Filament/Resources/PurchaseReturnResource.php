@@ -108,9 +108,9 @@ class PurchaseReturnResource extends Resource
                 Tables\Columns\TextColumn::make('return_number')->label('رقم المرتجع')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('return_date')->label('التاريخ')->date('Y-m-d')->sortable(),
                 Tables\Columns\TextColumn::make('supplier.name')->label('المورد')->searchable(),
-                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($s) => Ledger::money($s)),
-                Tables\Columns\TextColumn::make('credited')->label('خُصم من المستحق')->formatStateUsing(fn ($s) => Ledger::money($s)),
-                Tables\Columns\TextColumn::make('refunded')->label('مُسترَد نقداً')->formatStateUsing(fn ($s) => Ledger::money($s)),
+                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($state) => Ledger::money($state)),
+                Tables\Columns\TextColumn::make('credited')->label('خُصم من المستحق')->formatStateUsing(fn ($state) => Ledger::money($state)),
+                Tables\Columns\TextColumn::make('refunded')->label('مُسترَد نقداً')->formatStateUsing(fn ($state) => Ledger::money($state)),
                 Tables\Columns\TextColumn::make('warehouse.name')->label('المخزن')->toggleable(),
             ])
             ->filters([

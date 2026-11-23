@@ -79,21 +79,21 @@ class CashMovementResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['shift.user', 'user']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['shift.user', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('occurred_on')->label('التاريخ')->date('Y-m-d')->sortable(),
                 Tables\Columns\TextColumn::make('type')->label('النوع')->badge(),
                 Tables\Columns\TextColumn::make('category')->label('التصنيف')
                     ->formatStateUsing(fn ($state) => CashMovementType::categoryLabel($state)),
                 Tables\Columns\TextColumn::make('amount')->label('المبلغ')
-                    ->formatStateUsing(fn ($s) => Ledger::money($s))->weight('bold')
+                    ->formatStateUsing(fn ($state) => Ledger::money($state))->weight('bold')
                     ->summarize([
                         Tables\Columns\Summarizers\Summarizer::make()->label('إجمالي الإيرادات')
                             ->using(fn ($query) => (float) $query->where('type', 'income')->sum('amount'))
-                            ->formatStateUsing(fn ($s) => Ledger::money($s)),
+                            ->formatStateUsing(fn ($state) => Ledger::money($state)),
                         Tables\Columns\Summarizers\Summarizer::make()->label('إجمالي المصروفات')
                             ->using(fn ($query) => (float) $query->where('type', 'expense')->sum('amount'))
-                            ->formatStateUsing(fn ($s) => Ledger::money($s)),
+                            ->formatStateUsing(fn ($state) => Ledger::money($state)),
                     ]),
                 Tables\Columns\TextColumn::make('description')->label('البيان')->placeholder('—')->wrap(),
                 Tables\Columns\TextColumn::make('shift.user.name')->label('الدرج')->placeholder('الخزينة الرئيسية'),
@@ -110,9 +110,9 @@ class CashMovementResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $q, array $d) => $q
-                        ->when($d['from'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '>=', $v))
-                        ->when($d['until'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '<=', $v))),
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, $date) => $query->whereDate('occurred_on', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, $date) => $query->whereDate('occurred_on', '<=', $date))),
             ]);
     }
 

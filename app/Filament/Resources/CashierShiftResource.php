@@ -78,15 +78,15 @@ class CashierShiftResource extends Resource
                     ->formatStateUsing(fn ($state) => $state === 'open' ? 'مفتوحة' : 'مغلقة')
                     ->color(fn ($state) => $state === 'open' ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('opening_cash')->label('الافتتاحي')
-                    ->formatStateUsing(fn ($s) => Ledger::money($s)),
+                    ->formatStateUsing(fn ($state) => Ledger::money($state)),
                 Tables\Columns\TextColumn::make('counted_cash')->label('المعدود')
-                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s)),
+                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state)),
                 Tables\Columns\TextColumn::make('expected_cash')->label('المتوقع')
-                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s))
+                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state))
                     ->visible(fn () => static::isManager()),
                 Tables\Columns\TextColumn::make('difference')->label('الفرق')
-                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s))
-                    ->color(fn ($s) => $s === null || (float) $s == 0 ? null : 'danger')
+                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state))
+                    ->color(fn ($state) => $state === null || (float) $state == 0 ? null : 'danger')
                     ->visible(fn () => static::isManager()),
             ])
             ->filters([

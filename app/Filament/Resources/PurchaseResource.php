@@ -121,11 +121,11 @@ class PurchaseResource extends Resource
                 Tables\Columns\TextColumn::make('purchase_date')->label('التاريخ')->date('Y-m-d')->sortable(),
                 Tables\Columns\TextColumn::make('supplier.name')->label('المورد')->searchable(),
                 Tables\Columns\TextColumn::make('supplier_invoice_no')->label('فاتورة المورد')->placeholder('—')->toggleable(),
-                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($s) => Ledger::money($s))->sortable(),
-                Tables\Columns\TextColumn::make('paid')->label('المدفوع')->formatStateUsing(fn ($s) => Ledger::money($s)),
+                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($state) => Ledger::money($state))->sortable(),
+                Tables\Columns\TextColumn::make('paid')->label('المدفوع')->formatStateUsing(fn ($state) => Ledger::money($state)),
                 Tables\Columns\TextColumn::make('due_amount')->label('المتبقي')
-                    ->formatStateUsing(fn ($s) => Ledger::money($s))
-                    ->color(fn ($s) => (float) $s > 0 ? 'danger' : 'success'),
+                    ->formatStateUsing(fn ($state) => Ledger::money($state))
+                    ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success'),
                 Tables\Columns\TextColumn::make('warehouse.name')->label('المخزن')->toggleable(),
                 Tables\Columns\TextColumn::make('user.name')->label('المستخدم')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
             ])
