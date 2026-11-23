@@ -54,10 +54,10 @@ class PurchaseResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('بيانات الفاتورة')->schema([
                 Forms\Components\Select::make('supplier_id')->label('المورد')
-                    ->relationship('supplier', 'name', fn (Builder $q) => $q->where('is_active', true))
+                    ->relationship('supplier', 'name', fn (Builder $query) => $query->where('is_active', true))
                     ->searchable()->preload()->required(),
                 Forms\Components\Select::make('warehouse_id')->label('المخزن المستلِم')
-                    ->relationship('warehouse', 'name', fn (Builder $q) => $q->where('is_active', true))
+                    ->relationship('warehouse', 'name', fn (Builder $query) => $query->where('is_active', true))
                     ->default(fn () => Warehouse::defaultOrCreate()->id)->required(),
                 Forms\Components\DatePicker::make('purchase_date')->label('تاريخ الفاتورة')->default(now())->required(),
                 Forms\Components\TextInput::make('supplier_invoice_no')->label('رقم فاتورة المورد')->maxLength(100),
@@ -132,7 +132,7 @@ class PurchaseResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('supplier_id')->label('المورد')->relationship('supplier', 'name'),
                 Tables\Filters\Filter::make('has_due')->label('بها متبقٍّ')->toggle()
-                    ->query(fn (Builder $q) => $q->where('due_amount', '>', 0)),
+                    ->query(fn (Builder $query) => $query->where('due_amount', '>', 0)),
             ])
             ->actions([Tables\Actions\ViewAction::make()->label('عرض')]);
     }

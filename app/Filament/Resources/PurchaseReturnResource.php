@@ -52,10 +52,10 @@ class PurchaseReturnResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('بيانات المرتجع')->schema([
                 Forms\Components\Select::make('supplier_id')->label('المورد')
-                    ->relationship('supplier', 'name', fn (Builder $q) => $q->where('is_active', true))
+                    ->relationship('supplier', 'name', fn (Builder $query) => $query->where('is_active', true))
                     ->searchable()->preload()->required(),
                 Forms\Components\Select::make('warehouse_id')->label('المخزن المُخرِج منه')
-                    ->relationship('warehouse', 'name', fn (Builder $q) => $q->where('is_active', true))
+                    ->relationship('warehouse', 'name', fn (Builder $query) => $query->where('is_active', true))
                     ->default(fn () => Warehouse::defaultOrCreate()->id)->required(),
                 Forms\Components\DatePicker::make('return_date')->label('التاريخ')->default(now())->required(),
             ])->columns(3),
