@@ -9,8 +9,10 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Setting;
 use App\Models\Warehouse;
-use App\Services\StockService;
+use App\Services\CheckoutService;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
@@ -249,99 +251,19 @@ class PosScreen extends Page
             return;
         }
 
-        $method = PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Cash;
-
         try {
-            $sale = DB::transaction(function () use ($method, $shift) {
-                $warehouse = Warehouse::defaultOrCreate();
-                $products = Product::whereIn('id', array_keys($this->cart))->lockForUpdate()->get()->keyBy('id');
-
-                // الأسعار تُقرأ من قاعدة البيانات وليس من المتصفح
-                $lines = [];
-                $subtotal = 0;
-
-                foreach ($this->cart as $id => $line) {
-                    $product = $products->get($id);
-                    $qty = round($this->num($line['qty']), 3);
-
-                    if (! $product || $qty <= 0) {
-                        continue;
-                    }
-
-                    $lineTotal = round($qty * (float) $product->retail_price, 2);
-                    $subtotal += $lineTotal;
-                    $lines[] = compact('product', 'qty', 'lineTotal');
-                }
-
-                if (empty($lines)) {
-                    throw new RuntimeException('لا توجد أصناف صالحة في السلة');
-                }
-
-                $discount = min(max(0, $this->num($this->discount)), $subtotal);
-                $total = round($subtotal - $discount, 2);
-
-                $paid = ($this->paidAmount === '' || $this->paidAmount === null)
-                    ? ($method === PaymentMethod::Credit ? 0.0 : $total)
-                    : $this->num($this->paidAmount);
-
-                $due = max(0, round($total - $paid, 2));
-                $change = max(0, round($paid - $total, 2));
-
-                if ($due > 0 && ! $this->customerId) {
-                    throw new RuntimeException('اختر عميلاً لتسجيل المبلغ المتبقي كدين');
-                }
-
-                if ($due > 0) {
-                    $customer = Customer::whereKey($this->customerId)->lockForUpdate()->firstOrFail();
-
-                    if ((float) $customer->credit_limit > 0
-                        && (float) $customer->balance + $due > (float) $customer->credit_limit) {
-                        throw new RuntimeException('تجاوز سقف الدين للعميل: ' . $customer->name);
-                    }
-                }
-
-                $sale = Sale::create([
-                    'invoice_number' => 'TMP-' . uniqid(),
-                    'user_id' => auth()->id(),
+            $sale = app(CheckoutService::class)->checkout(
+                collect($this->cart)->map(fn ($line) => $line['qty'])->all(),
+                [
+                    'discount' => $this->discount,
                     'customer_id' => $this->customerId,
-                    'warehouse_id' => $warehouse->id,
-                    'shift_id' => $shift->id,
-                    'subtotal' => $subtotal,
-                    'discount' => $discount,
-                    'total' => $total,
-                    'paid' => min($paid, $total),
-                    'change_amount' => $change,
-                    'due_amount' => $due,
-                    'payment_method' => $method->value,
-                    'payment_details' => $method->needsDetails() ? ($this->paymentDetails ?: null) : null,
-                ]);
-
-                $sale->update(['invoice_number' => 'INV-' . str_pad((string) $sale->id, 6, '0', STR_PAD_LEFT)]);
-
-                foreach ($lines as $l) {
-                    $sale->items()->create([
-                        'product_id' => $l['product']->id,
-                        'product_name' => $l['product']->name,
-                        'quantity' => $l['qty'],
-                        'unit_price' => $l['product']->retail_price,
-                        'cost_price' => $l['product']->cost_price,
-                        'total' => $l['lineTotal'],
-                    ]);
-
-                    app(StockService::class)->adjust(
-                        $l['product']->id, $warehouse->id, -$l['qty'], 'sale', $sale->invoice_number
-                    );
-                }
-
-                if ($due > 0) {
-                    Customer::findOrFail($this->customerId)->addTransaction(LedgerType::Debt, $due, [
-                        'sale_id' => $sale->id,
-                        'description' => 'فاتورة ' . $sale->invoice_number,
-                    ]);
-                }
-
-                return $sale;
-            });
+                    'payment_method' => $this->paymentMethod,
+                    'paid_amount' => $this->paidAmount,
+                    'payment_details' => $this->paymentDetails,
+                ],
+                $shift,
+                auth()->id(),
+            );
         } catch (RuntimeException $e) {
             Notification::make()->title($e->getMessage())->danger()->send();
 
@@ -351,8 +273,17 @@ class PosScreen extends Page
         Notification::make()
             ->title('تمت عملية البيع')
             ->body("رقم الفاتورة: {$sale->invoice_number} — الإجمالي: ₪" . number_format((float) $sale->total, 2))
+            ->actions([
+                NotificationAction::make('print')
+                    ->label('طباعة الفاتورة')
+                    ->url(route('receipts.show', $sale) . '?autoprint=1', shouldOpenInNewTab: true),
+            ])
             ->success()
             ->send();
+
+        if (Setting::bool('auto_print_receipt')) {
+            $this->dispatch('print-receipt', url: route('receipts.show', $sale));
+        }
 
         $this->resetSale();
         unset($this->products);

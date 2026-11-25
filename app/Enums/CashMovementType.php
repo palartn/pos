@@ -36,6 +36,7 @@ enum CashMovementType: string implements HasColor, HasLabel
             self::Expense => [
                 'rent' => 'إيجار',
                 'salaries' => 'رواتب',
+                'employee_advance' => 'سلف موظفين',
                 'utilities' => 'كهرباء وماء واتصالات',
                 'maintenance' => 'صيانة',
                 'supplies' => 'نثريات ومستلزمات',

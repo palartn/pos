@@ -6,6 +6,7 @@ use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class CashierShift extends Model
 {
@@ -52,6 +53,35 @@ class CashierShift extends Model
         return $this->hasMany(CashMovement::class, 'shift_id');
     }
 
+    /** إغلاق الوردية: يرجع الفرق (المعدود − المتوقع) أو null إن كانت مغلقة مسبقاً */
+    public function closeWith(float $counted, ?string $notes = null): ?float
+    {
+        return DB::transaction(function () use ($counted, $notes) {
+            $shift = static::whereKey($this->id)->lockForUpdate()->first();
+
+            if (! $shift->isOpen()) {
+                return null;
+            }
+
+            $expected = $shift->summary()['expected_cash'];
+            $counted = round($counted, 2);
+            $diff = round($counted - $expected, 2);
+
+            $shift->update([
+                'status' => 'closed',
+                'closed_at' => now(),
+                'expected_cash' => $expected,
+                'counted_cash' => $counted,
+                'difference' => $diff,
+                'notes' => $notes,
+            ]);
+
+            $this->refresh();
+
+            return $diff;
+        });
+    }
+
     /** ملخص الوردية والنقد المتوقع في الدرج */
     public function summary(): array
     {
@@ -77,6 +107,8 @@ class CashierShift extends Model
         $supplierCash = (float) SupplierTransaction::where('shift_id', $id)
             ->where('type', 'payment')->where('payment_method', 'cash')->sum('amount');
 
+        $saleRefunds = (float) SaleReturn::where('shift_id', $id)->where('refund_method', 'cash')->sum('cash_refund');
+
         $income = (float) CashMovement::where('shift_id', $id)->where('type', 'income')->sum('amount');
         $expense = (float) CashMovement::where('shift_id', $id)->where('type', 'expense')->sum('amount');
 
@@ -92,7 +124,8 @@ class CashierShift extends Model
             'supplier_cash' => $supplierCash,
             'income' => $income,
             'expense' => $expense,
-            'expected_cash' => round($opening + $cashSales + $customerCash + $income - $supplierCash - $expense, 2),
+            'sale_refunds' => $saleRefunds,
+            'expected_cash' => round($opening + $cashSales + $customerCash + $income - $supplierCash - $expense - $saleRefunds, 2),
         ];
     }
 }

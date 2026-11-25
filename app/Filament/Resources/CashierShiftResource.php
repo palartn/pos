@@ -78,15 +78,15 @@ class CashierShiftResource extends Resource
                     ->formatStateUsing(fn ($state) => $state === 'open' ? 'مفتوحة' : 'مغلقة')
                     ->color(fn ($state) => $state === 'open' ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('opening_cash')->label('الافتتاحي')
-                    ->formatStateUsing(fn ($state) => Ledger::money($state)),
+                    ->formatStateUsing(fn ($s) => Ledger::money($s)),
                 Tables\Columns\TextColumn::make('counted_cash')->label('المعدود')
-                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state)),
+                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s)),
                 Tables\Columns\TextColumn::make('expected_cash')->label('المتوقع')
-                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state))
+                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s))
                     ->visible(fn () => static::isManager()),
                 Tables\Columns\TextColumn::make('difference')->label('الفرق')
-                    ->formatStateUsing(fn ($state) => $state === null ? '—' : Ledger::money($state))
-                    ->color(fn ($state) => $state === null || (float) $state == 0 ? null : 'danger')
+                    ->formatStateUsing(fn ($s) => $s === null ? '—' : Ledger::money($s))
+                    ->color(fn ($s) => $s === null || (float) $s == 0 ? null : 'danger')
                     ->visible(fn () => static::isManager()),
             ])
             ->filters([
@@ -120,28 +120,7 @@ class CashierShiftResource extends Resource
                         Forms\Components\Textarea::make('notes')->label('ملاحظات')->rows(2),
                     ])
                     ->action(function ($record, array $data) {
-                        $result = DB::transaction(function () use ($record, $data) {
-                            $shift = CashierShift::whereKey($record->id)->lockForUpdate()->first();
-
-                            if (! $shift->isOpen()) {
-                                return null;
-                            }
-
-                            $expected = $shift->summary()['expected_cash'];
-                            $counted = round((float) $data['counted_cash'], 2);
-                            $diff = round($counted - $expected, 2);
-
-                            $shift->update([
-                                'status' => 'closed',
-                                'closed_at' => now(),
-                                'expected_cash' => $expected,
-                                'counted_cash' => $counted,
-                                'difference' => $diff,
-                                'notes' => $data['notes'] ?? null,
-                            ]);
-
-                            return $diff;
-                        });
+                        $result = $record->closeWith((float) $data['counted_cash'], $data['notes'] ?? null);
 
                         if ($result === null) {
                             Notification::make()->title('الوردية مغلقة مسبقاً')->warning()->send();

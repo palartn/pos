@@ -45,8 +45,16 @@ class RolesAndAdminSeeder extends Seeder
             'accountant' => ['cashbox.manage', 'reports.view', 'sales.view', 'suppliers.manage', 'purchases.manage', 'customers.manage'], // محاسب
         ];
 
+        $labels = [
+            'super_admin' => 'مدير عام',
+            'branch_manager' => 'مدير فرع',
+            'cashier' => 'كاشير',
+            'storekeeper' => 'أمين مخزن',
+            'accountant' => 'محاسب',
+        ];
+
         foreach ($roles as $role => $perms) {
-            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web'])->syncPermissions($perms);
+            Role::updateOrCreate(['name' => $role, 'guard_name' => 'web'], ['label' => $labels[$role]])->syncPermissions($perms);
         }
 
         $admin = User::firstOrCreate(

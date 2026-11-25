@@ -16,11 +16,19 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ReceiptController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        // طباعة إيصال الفاتورة (يتحقق المتحكم من الدخول والصلاحية)
+        Route::middleware('web')->get('receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -32,7 +40,11 @@ class AdminPanelProvider extends PanelProvider
             ->font('Cairo')
             ->colors(['primary' => Color::Emerald])
             ->sidebarCollapsibleOnDesktop()
-            ->navigationGroups(['الخزينة والورديات', 'المشتريات', 'العملاء والموردون', 'المخزون'])
+            ->navigationGroups(['المبيعات', 'الخزينة والورديات', 'المشتريات', 'العملاء والموردون', 'المخزون', 'الموظفون', 'التقارير', 'الإدارة'])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/reports.css') . '?v=' . (@filemtime(public_path('css/reports.css')) ?: 1) . '">',
+            )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/pos.css') . '?v=' . (@filemtime(public_path('css/pos.css')) ?: 1) . '">',

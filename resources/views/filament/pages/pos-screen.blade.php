@@ -7,7 +7,8 @@
     @endif
 
     <div class="pos"
-         x-data
+         x-data="{ printReceipt(url) { const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden'; f.onload = () => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 60000); }; f.src = url; document.body.appendChild(f); } }"
+         x-on:print-receipt.window="printReceipt($event.detail.url)"
          x-on:keydown.f2.window.prevent="$refs.barcode.focus()"
          x-on:pos-focus.window="$nextTick(() => $refs.barcode.focus())">
 

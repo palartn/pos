@@ -10,6 +10,7 @@
         <tr><td style="{{ $cell }}">(+) دفعات عملاء نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['customer_cash']) }}</td></tr>
         <tr><td style="{{ $cell }}">(+) إيرادات أخرى</td><td style="{{ $cell }}text-align:end">{{ $money($s['income']) }}</td></tr>
         <tr><td style="{{ $cell }}">(−) دفعات موردين نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['supplier_cash']) }}</td></tr>
+        <tr><td style="{{ $cell }}">(−) مرتجعات بيع نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['sale_refunds']) }}</td></tr>
         <tr><td style="{{ $cell }}">(−) مصروفات</td><td style="{{ $cell }}text-align:end">{{ $money($s['expense']) }}</td></tr>
         <tr style="font-weight:800"><td style="{{ $cell }}">المتوقع في الدرج</td><td style="{{ $cell }}text-align:end">{{ $money($s['expected_cash']) }}</td></tr>
         @if ($shift->counted_cash !== null)
