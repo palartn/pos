@@ -34,6 +34,16 @@ class Product extends Model
         return $this->hasMany(ProductStock::class);
     }
 
+    /** سعر البيع حسب مستوى العميل؛ إن لم يُحدَّد سعر جملة يُستخدم سعر التجزئة */
+    public function priceFor(string $level): float
+    {
+        if ($level === 'wholesale' && (float) $this->wholesale_price > 0) {
+            return (float) $this->wholesale_price;
+        }
+
+        return (float) $this->retail_price;
+    }
+
     /** إجمالي الكمية في كل المخازن (عمود stock يُحدَّث تلقائياً من StockService) */
     public function isLowStock(): bool
     {

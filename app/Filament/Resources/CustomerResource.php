@@ -37,6 +37,10 @@ class CustomerResource extends Resource
                 Forms\Components\TextInput::make('address')->label('العنوان')->maxLength(255),
                 Forms\Components\TextInput::make('credit_limit')->label('سقف الدين (₪)')
                     ->numeric()->minValue(0)->default(0)->helperText('0 = بدون سقف'),
+                Forms\Components\Select::make('price_level')->label('مستوى السعر')
+                    ->options(['retail' => 'تجزئة', 'wholesale' => 'جملة'])->default('retail')
+                    ->selectablePlaceholder(false)
+                    ->helperText('عميل الجملة يُباع له بسعر الجملة المسجَّل للصنف (وبسعر التجزئة إن لم يُحدَّد)'),
                 Forms\Components\Toggle::make('is_active')->label('فعّال')->default(true),
                 Forms\Components\Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
             ])->columns(2),
@@ -50,6 +54,9 @@ class CustomerResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable()->sortable()->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')->label('الهاتف')->searchable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('price_level')->label('السعر')->badge()
+                    ->formatStateUsing(fn ($s) => $s === 'wholesale' ? 'جملة' : 'تجزئة')
+                    ->color(fn ($s) => $s === 'wholesale' ? 'info' : 'gray'),
                 Tables\Columns\TextColumn::make('balance')->label('الدين المستحق')->sortable()
                     ->formatStateUsing(fn ($state) => Ledger::money($state))
                     ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success')

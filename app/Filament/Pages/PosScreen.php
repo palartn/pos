@@ -67,7 +67,25 @@ class PosScreen extends Page
     #[Computed]
     public function customers(): Collection
     {
-        return Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'balance']);
+        return Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'balance', 'price_level']);
+    }
+
+    #[Computed]
+    public function priceLevel(): string
+    {
+        return $this->customers->firstWhere('id', $this->customerId)?->price_level === 'wholesale'
+            ? 'wholesale'
+            : 'retail';
+    }
+
+    /** عند تغيير العميل يُعاد تسعير السلة بحسب مستواه (الخادم يعيد الحساب عند الحفظ على أي حال) */
+    public function updatedCustomerId(): void
+    {
+        $level = $this->priceLevel;
+
+        foreach (Product::whereIn('id', array_keys($this->cart))->get() as $product) {
+            $this->cart[$product->id]['price'] = $product->priceFor($level);
+        }
     }
 
     #[Computed]
@@ -164,7 +182,7 @@ class PosScreen extends Page
         } else {
             $this->cart[$id] = [
                 'name' => $product->name,
-                'price' => (float) $product->retail_price,
+                'price' => $product->priceFor($this->priceLevel),
                 'qty' => $product->sold_by_weight ? 1 : 1,
                 'unit' => $product->unit,
                 'weight' => (bool) $product->sold_by_weight,

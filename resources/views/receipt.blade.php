@@ -41,6 +41,9 @@
     <div class="row"><span>التاريخ</span><span>{{ $sale->created_at->format('Y-m-d H:i') }}</span></div>
     <div class="row"><span>الكاشير</span><span>{{ $sale->user?->name }}</span></div>
     <div class="row"><span>العميل</span><span>{{ $sale->customer?->name ?? 'نقدي' }}</span></div>
+    @if ($sale->price_level === 'wholesale')
+        <div class="row"><span>مستوى السعر</span><span>جملة</span></div>
+    @endif
     <hr>
     <table>
         <thead><tr><th>الصنف</th><th class="e">الكمية</th><th class="e">السعر</th><th class="e">الإجمالي</th></tr></thead>

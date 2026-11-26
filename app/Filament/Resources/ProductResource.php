@@ -45,7 +45,9 @@ class ProductResource extends Resource
             Forms\Components\Section::make('الأسعار والتنبيه')->schema([
                 Forms\Components\TextInput::make('cost_price')->label('سعر التكلفة (₪)')->numeric()->step(0.01)->minValue(0)->default(0)->required(),
                 Forms\Components\TextInput::make('retail_price')->label('سعر التجزئة (₪)')->numeric()->step(0.01)->minValue(0)->required(),
-                Forms\Components\TextInput::make('wholesale_price')->label('سعر الجملة (₪)')->numeric()->step(0.01)->minValue(0),
+                Forms\Components\TextInput::make('wholesale_price')->label('سعر الجملة (₪)')->numeric()->step(0.01)->minValue(0)
+                    ->lte('retail_price')
+                    ->helperText('اتركه فارغاً ليُباع لعملاء الجملة بسعر التجزئة'),
                 Forms\Components\TextInput::make('min_stock')->label('حد التنبيه (الحد الأدنى)')->numeric()->step(0.001)->minValue(0)->default(0),
             ])->columns(2),
         ]);

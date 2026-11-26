@@ -10,7 +10,7 @@ class Customer extends Model
 {
     use HasLedger;
 
-    protected $fillable = ['name', 'phone', 'address', 'balance', 'credit_limit', 'is_active', 'notes'];
+    protected $fillable = ['name', 'phone', 'address', 'balance', 'credit_limit', 'is_active', 'notes', 'price_level'];
 
     protected $casts = [
         'balance' => 'decimal:2',

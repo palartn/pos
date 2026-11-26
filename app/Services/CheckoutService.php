@@ -37,6 +37,9 @@ class CheckoutService
 
             $warehouse = Warehouse::defaultOrCreate();
 
+            // مستوى السعر يُحدَّد من العميل في الخادم (جملة / تجزئة)
+            $level = ($customerId && Customer::whereKey($customerId)->value('price_level') === 'wholesale') ? 'wholesale' : 'retail';
+
             $products = Product::whereIn('id', array_keys($quantities))
                 ->where('is_active', true)
                 ->lockForUpdate()
@@ -54,9 +57,10 @@ class CheckoutService
                     continue;
                 }
 
-                $lineTotal = round($qty * (float) $product->retail_price, 2);
+                $price = $product->priceFor($level);
+                $lineTotal = round($qty * $price, 2);
                 $subtotal += $lineTotal;
-                $lines[] = compact('product', 'qty', 'lineTotal');
+                $lines[] = compact('product', 'qty', 'price', 'lineTotal');
             }
 
             if (empty($lines)) {
@@ -100,6 +104,7 @@ class CheckoutService
                 'customer_id' => $customerId,
                 'warehouse_id' => $warehouse->id,
                 'shift_id' => $shift->id,
+                'price_level' => $level,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total' => $total,
@@ -117,7 +122,7 @@ class CheckoutService
                     'product_id' => $l['product']->id,
                     'product_name' => $l['product']->name,
                     'quantity' => $l['qty'],
-                    'unit_price' => $l['product']->retail_price,
+                    'unit_price' => $l['price'],
                     'cost_price' => $l['product']->cost_price,
                     'total' => $l['lineTotal'],
                 ]);

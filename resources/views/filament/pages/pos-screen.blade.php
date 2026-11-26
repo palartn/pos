@@ -42,7 +42,7 @@
                         @endif
                         <span class="pos-product__name">{{ $product->name }}</span>
                         <span class="pos-product__meta">المخزون: {{ rtrim(rtrim(number_format($product->warehouseQty(), 3, '.', ''), '0'), '.') }} {{ $product->unit }}</span>
-                        <span class="pos-product__price">₪{{ number_format((float) $product->retail_price, 2) }}</span>
+                        <span class="pos-product__price">₪{{ number_format($product->priceFor($this->priceLevel), 2) }}</span>
                     </button>
                 @empty
                     <div class="pos-empty">لا توجد أصناف مطابقة</div>
@@ -53,7 +53,11 @@
         {{-- ================= السلة والدفع ================= --}}
         <aside class="pos-card pos-cart">
             <div class="pos-cart__head">
-                <span>🛒 الفاتورة الحالية ({{ count($cart) }})</span>
+                <span>🛒 الفاتورة الحالية ({{ count($cart) }})
+                    @if ($this->priceLevel === 'wholesale')
+                        <span class="pos-badge pos-badge--weight" style="position:static;margin-inline-start:.4rem">سعر الجملة</span>
+                    @endif
+                </span>
                 @if (count($cart))
                     <button type="button" class="pos-link" wire:click="clearCart" wire:confirm="إفراغ السلة؟">إفراغ</button>
                 @endif
@@ -106,7 +110,7 @@
                 <select class="pos-select" wire:model.live="customerId">
                     <option value="">— عميل نقدي —</option>
                     @foreach ($this->customers as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }}@if ((float) $c->balance > 0) (دين: ₪{{ number_format((float) $c->balance, 2) }})@endif</option>
+                        <option value="{{ $c->id }}">{{ $c->name }}@if ($c->price_level === 'wholesale') — جملة @endif @if ((float) $c->balance > 0) (دين: ₪{{ number_format((float) $c->balance, 2) }})@endif</option>
                     @endforeach
                 </select>
 
