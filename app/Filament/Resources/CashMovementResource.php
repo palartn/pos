@@ -110,9 +110,9 @@ class CashMovementResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $q, array $d) => $q
-                        ->when($d['from'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '>=', $v))
-                        ->when($d['until'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '<=', $v))),
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['from'] ?? null, fn ($query, $value) => $query->whereDate('occurred_on', '>=', $value))
+                        ->when($data['until'] ?? null, fn ($query, $value) => $query->whereDate('occurred_on', '<=', $value))),
             ]);
     }
 

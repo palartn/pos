@@ -70,7 +70,7 @@ class CustomerResource extends Resource
                     ->label('تسجيل دفعة')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
-                    ->visible(fn ($record) => (float) $record->balance > 0)
+                    ->visible(fn ($record) => (float) $record->balance > 0 && (auth()->user()?->can('vouchers.create') ?? false))
                     ->form(Ledger::paymentFields(fn ($record) => (float) $record->balance))
                     ->action(fn ($record, array $data) => Ledger::post($record, LedgerType::Payment, $data)),
                 Tables\Actions\EditAction::make()->label('فتح / تعديل'),

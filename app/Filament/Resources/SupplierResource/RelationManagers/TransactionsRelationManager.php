@@ -15,6 +15,11 @@ class TransactionsRelationManager extends LedgerRelationManager
         return 'تسجيل مستحق (فاتورة شراء)';
     }
 
+    protected function canPay(): bool
+    {
+        return auth()->user()?->can('payvouchers.create') ?? false;
+    }
+
     protected function balanceLabel(): string
     {
         return 'المستحق للمورد';

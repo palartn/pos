@@ -10,6 +10,11 @@ class TransactionsRelationManager extends LedgerRelationManager
 
     protected static ?string $title = 'دفتر الديون (كشف حساب العميل)';
 
+    protected function canPay(): bool
+    {
+        return auth()->user()?->can('vouchers.create') ?? false;
+    }
+
     protected function balanceLabel(): string
     {
         return 'الدين المستحق على العميل';

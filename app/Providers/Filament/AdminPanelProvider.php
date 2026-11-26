@@ -17,7 +17,9 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentVoucherController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -27,6 +29,8 @@ class AdminPanelProvider extends PanelProvider
     {
         // طباعة إيصال الفاتورة (يتحقق المتحكم من الدخول والصلاحية)
         Route::middleware('web')->get('receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
+        Route::middleware('web')->get('vouchers/{voucher}', [VoucherController::class, 'show'])->name('vouchers.show');
+        Route::middleware('web')->get('payment-vouchers/{paymentVoucher}', [PaymentVoucherController::class, 'show'])->name('payment-vouchers.show');
     }
 
     public function panel(Panel $panel): Panel

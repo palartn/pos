@@ -21,6 +21,13 @@ class PermissionLabels
         'reports.view' => 'التقارير (وعرض كل الفواتير والورديات)',
         'settings.manage' => 'الإعدادات العامة',
         'users.manage' => 'المستخدمون والأدوار',
+        'vouchers.view' => 'عرض سندات القبض',
+        'vouchers.create' => 'إصدار سندات قبض (استلام دفعات العملاء)',
+        'vouchers.cancel' => 'إلغاء سندات القبض (المدير العام)',
+        'payvouchers.view' => 'عرض سندات الصرف',
+        'payvouchers.create' => 'إصدار سندات صرف (دفع المستحقات للموردين)',
+        'payvouchers.cancel' => 'إلغاء سندات الصرف (المدير العام)',
+        'sequences.manage' => 'إدارة ترقيم المستندات (المدير العام)',
     ];
 
     public static function label(string $name): string

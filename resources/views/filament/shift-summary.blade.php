@@ -8,8 +8,10 @@
         <tr><td style="{{ $cell }}">الرصيد الافتتاحي</td><td style="{{ $cell }}text-align:end">{{ $money($s['opening_cash']) }}</td></tr>
         <tr><td style="{{ $cell }}">(+) مبيعات نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['cash_sales']) }}</td></tr>
         <tr><td style="{{ $cell }}">(+) دفعات عملاء نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['customer_cash']) }}</td></tr>
+        <tr><td style="{{ $cell }}">(−) سندات قبض نقدية مُلغاة</td><td style="{{ $cell }}text-align:end">{{ $money($s['customer_cash_reversals']) }}</td></tr>
         <tr><td style="{{ $cell }}">(+) إيرادات أخرى</td><td style="{{ $cell }}text-align:end">{{ $money($s['income']) }}</td></tr>
         <tr><td style="{{ $cell }}">(−) دفعات موردين نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['supplier_cash']) }}</td></tr>
+        <tr><td style="{{ $cell }}">(+) سندات صرف نقدية مُلغاة</td><td style="{{ $cell }}text-align:end">{{ $money($s['supplier_cash_reversals']) }}</td></tr>
         <tr><td style="{{ $cell }}">(−) مرتجعات بيع نقدية</td><td style="{{ $cell }}text-align:end">{{ $money($s['sale_refunds']) }}</td></tr>
         <tr><td style="{{ $cell }}">(−) مصروفات</td><td style="{{ $cell }}text-align:end">{{ $money($s['expense']) }}</td></tr>
         <tr style="font-weight:800"><td style="{{ $cell }}">المتوقع في الدرج</td><td style="{{ $cell }}text-align:end">{{ $money($s['expected_cash']) }}</td></tr>

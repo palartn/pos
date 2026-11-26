@@ -26,6 +26,11 @@ abstract class LedgerRelationManager extends RelationManager
         return 'الرصيد الحالي';
     }
 
+    protected function canPay(): bool
+    {
+        return true;
+    }
+
     public function isReadOnly(): bool
     {
         return false;
@@ -70,6 +75,7 @@ abstract class LedgerRelationManager extends RelationManager
                     ->label('تسجيل دفعة')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
+                    ->visible(fn () => $this->canPay())
                     ->modalHeading('تسجيل دفعة')
                     ->disabled(fn () => (float) $this->getOwnerRecord()->balance <= 0)
                     ->form(Ledger::paymentFields(fn () => (float) $this->getOwnerRecord()->balance))

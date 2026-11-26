@@ -4,9 +4,14 @@ namespace App\Filament\Support;
 
 use App\Enums\LedgerType;
 use App\Enums\PaymentMethod;
+use App\Models\Customer;
+use App\Models\Supplier;
+use App\Services\PaymentVoucherService;
+use App\Services\VoucherService;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Get;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
@@ -57,6 +62,62 @@ class Ledger
 
     public static function post(Model $owner, LedgerType $type, array $data): bool
     {
+        // دفعة عميل = سند قبض بترقيم تسلسلي
+        if ($owner instanceof Customer && $type === LedgerType::Payment) {
+            try {
+                $voucher = app(VoucherService::class)->receive(
+                    $owner,
+                    (float) $data['amount'],
+                    $data['payment_method'] ?? 'cash',
+                    $data['payment_details'] ?? null,
+                    $data['description'] ?? null,
+                );
+            } catch (RuntimeException|InvalidArgumentException $e) {
+                Notification::make()->title($e->getMessage())->danger()->send();
+
+                return false;
+            }
+
+            Notification::make()
+                ->title('تم إصدار سند القبض ' . $voucher->number)
+                ->body('المبلغ ' . self::money($voucher->amount) . ' — الدين المتبقي ' . self::money($voucher->balance_after))
+                ->actions([
+                    NotificationAction::make('print')->label('طباعة السند')
+                        ->url(route('vouchers.show', $voucher) . '?autoprint=1', shouldOpenInNewTab: true),
+                ])
+                ->success()->send();
+
+            return true;
+        }
+
+        // دفعة مورد = سند صرف بترقيم تسلسلي
+        if ($owner instanceof Supplier && $type === LedgerType::Payment) {
+            try {
+                $voucher = app(PaymentVoucherService::class)->pay(
+                    $owner,
+                    (float) $data['amount'],
+                    $data['payment_method'] ?? 'cash',
+                    $data['payment_details'] ?? null,
+                    $data['description'] ?? null,
+                );
+            } catch (RuntimeException|InvalidArgumentException $e) {
+                Notification::make()->title($e->getMessage())->danger()->send();
+
+                return false;
+            }
+
+            Notification::make()
+                ->title('تم إصدار سند الصرف ' . $voucher->number)
+                ->body('المبلغ ' . self::money($voucher->amount) . ' — المستحق المتبقي ' . self::money($voucher->balance_after))
+                ->actions([
+                    NotificationAction::make('print')->label('طباعة السند')
+                        ->url(route('payment-vouchers.show', $voucher) . '?autoprint=1', shouldOpenInNewTab: true),
+                ])
+                ->success()->send();
+
+            return true;
+        }
+
         $extra = ['description' => $data['description'] ?? null];
 
         if ($type === LedgerType::Payment) {

@@ -97,7 +97,7 @@ class SaleReturnService
             }
 
             $return = SaleReturn::create([
-                'return_number' => 'TMP-' . uniqid(),
+                'return_number' => app(NumberSequence::class)->next('sale_return'),
                 'sale_id' => $sale->id,
                 'customer_id' => $sale->customer_id,
                 'warehouse_id' => $sale->warehouse_id ?? Warehouse::defaultOrCreate()->id,
@@ -109,8 +109,6 @@ class SaleReturnService
                 'refund_method' => $method,
                 'notes' => $notes,
             ]);
-
-            $return->update(['return_number' => 'RET-' . str_pad((string) $return->id, 6, '0', STR_PAD_LEFT)]);
 
             $stock = app(StockService::class);
 

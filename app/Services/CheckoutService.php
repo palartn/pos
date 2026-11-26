@@ -95,7 +95,7 @@ class CheckoutService
             }
 
             $sale = Sale::create([
-                'invoice_number' => 'TMP-' . uniqid(),
+                'invoice_number' => app(NumberSequence::class)->next('sale'),
                 'user_id' => $userId ?? auth()->id(),
                 'customer_id' => $customerId,
                 'warehouse_id' => $warehouse->id,
@@ -109,8 +109,6 @@ class CheckoutService
                 'payment_method' => $method->value,
                 'payment_details' => $method->needsDetails() ? (($options['payment_details'] ?? null) ?: null) : null,
             ]);
-
-            $sale->update(['invoice_number' => 'INV-' . str_pad((string) $sale->id, 6, '0', STR_PAD_LEFT)]);
 
             $stock = app(StockService::class);
 

@@ -70,16 +70,16 @@ class SaleResource extends Resource
                 Tables\Columns\TextColumn::make('invoice_number')->label('رقم الفاتورة')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime('Y-m-d H:i')->sortable(),
                 Tables\Columns\TextColumn::make('customer.name')->label('العميل')->placeholder('عميل نقدي')->searchable(),
-                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($s) => Ledger::money($s))->sortable(),
-                Tables\Columns\TextColumn::make('paid')->label('المدفوع')->formatStateUsing(fn ($s) => Ledger::money($s)),
+                Tables\Columns\TextColumn::make('total')->label('الإجمالي')->formatStateUsing(fn ($state) => Ledger::money($state))->sortable(),
+                Tables\Columns\TextColumn::make('paid')->label('المدفوع')->formatStateUsing(fn ($state) => Ledger::money($state)),
                 Tables\Columns\TextColumn::make('due_amount')->label('الدين')
-                    ->formatStateUsing(fn ($s) => Ledger::money($s))
-                    ->color(fn ($s) => (float) $s > 0 ? 'danger' : null),
+                    ->formatStateUsing(fn ($state) => Ledger::money($state))
+                    ->color(fn ($state) => (float) $state > 0 ? 'danger' : null),
                 Tables\Columns\TextColumn::make('payment_method')->label('طريقة الدفع')
-                    ->formatStateUsing(fn ($s) => PaymentMethod::tryFrom($s)?->label() ?? $s),
+                    ->formatStateUsing(fn ($state) => PaymentMethod::tryFrom($state)?->label() ?? $state),
                 Tables\Columns\TextColumn::make('returns_sum_total')->label('المرتجع')
-                    ->formatStateUsing(fn ($s) => (float) $s > 0 ? Ledger::money($s) : '—')
-                    ->color(fn ($s) => (float) $s > 0 ? 'warning' : null),
+                    ->formatStateUsing(fn ($state) => (float) $state > 0 ? Ledger::money($state) : '—')
+                    ->color(fn ($state) => (float) $state > 0 ? 'warning' : null),
                 Tables\Columns\TextColumn::make('user.name')->label('الكاشير')->toggleable(),
             ])
             ->filters([
@@ -92,16 +92,16 @@ class SaleResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $q, array $d) => $q
-                        ->when($d['from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
-                        ->when($d['until'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))),
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['from'] ?? null, fn ($query, $value) => $query->whereDate('created_at', '>=', $value))
+                        ->when($data['until'] ?? null, fn ($query, $value) => $query->whereDate('created_at', '<=', $value))),
             ])
             ->actions([Tables\Actions\ViewAction::make()->label('عرض')]);
     }
 
     public static function infolist(Infolist $infolist): Infolist
     {
-        $money = fn ($s) => Ledger::money($s);
+        $money = fn ($state) => Ledger::money($state);
 
         return $infolist->schema([
             Infolists\Components\Section::make('الفاتورة')->schema([
@@ -110,7 +110,7 @@ class SaleResource extends Resource
                 Infolists\Components\TextEntry::make('user.name')->label('الكاشير')->placeholder('—'),
                 Infolists\Components\TextEntry::make('customer.name')->label('العميل')->placeholder('عميل نقدي'),
                 Infolists\Components\TextEntry::make('payment_method')->label('طريقة الدفع')
-                    ->formatStateUsing(fn ($s) => PaymentMethod::tryFrom($s)?->label() ?? $s),
+                    ->formatStateUsing(fn ($state) => PaymentMethod::tryFrom($state)?->label() ?? $state),
                 Infolists\Components\TextEntry::make('payment_details')->label('تفاصيل الدفع')->placeholder('—'),
             ])->columns(3),
 
@@ -118,7 +118,7 @@ class SaleResource extends Resource
                 Infolists\Components\RepeatableEntry::make('items')->hiddenLabel()->schema([
                     Infolists\Components\TextEntry::make('product_name')->label('الصنف'),
                     Infolists\Components\TextEntry::make('quantity')->label('الكمية')
-                        ->formatStateUsing(fn ($s) => rtrim(rtrim(number_format((float) $s, 3, '.', ''), '0'), '.')),
+                        ->formatStateUsing(fn ($state) => rtrim(rtrim(number_format((float) $state, 3, '.', ''), '0'), '.')),
                     Infolists\Components\TextEntry::make('unit_price')->label('السعر')->formatStateUsing($money),
                     Infolists\Components\TextEntry::make('total')->label('الإجمالي')->formatStateUsing($money),
                 ])->columns(4),

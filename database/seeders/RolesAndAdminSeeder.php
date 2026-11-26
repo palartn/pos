@@ -31,6 +31,13 @@ class RolesAndAdminSeeder extends Seeder
             'reports.view',      // التقارير
             'settings.manage',   // الإعدادات
             'users.manage',      // المستخدمون والصلاحيات
+            'vouchers.view',     // عرض سندات القبض
+            'vouchers.create',   // إصدار سندات قبض
+            'vouchers.cancel',   // إلغاء سندات القبض (المدير العام)
+            'sequences.manage',  // ترقيم المستندات (المدير العام)
+            'payvouchers.view',   // عرض سندات الصرف
+            'payvouchers.create', // إصدار سندات صرف
+            'payvouchers.cancel', // إلغاء سندات الصرف (المدير العام)
         ];
 
         foreach ($permissions as $name) {
@@ -39,10 +46,10 @@ class RolesAndAdminSeeder extends Seeder
 
         $roles = [
             'super_admin' => $permissions,                                                    // مدير عام
-            'branch_manager' => array_values(array_diff($permissions, ['users.manage'])),    // مدير فرع
-            'cashier' => ['pos.access', 'pos.credit_sale', 'shifts.manage', 'sales.view'],   // كاشير
+            'branch_manager' => array_values(array_diff($permissions, ['users.manage', 'vouchers.cancel', 'sequences.manage', 'payvouchers.cancel'])),    // مدير فرع
+            'cashier' => ['pos.access', 'pos.credit_sale', 'shifts.manage', 'sales.view', 'vouchers.create'],   // كاشير
             'storekeeper' => ['products.manage', 'inventory.manage', 'stocktake.manage', 'suppliers.manage', 'purchases.manage'], // أمين مخزن
-            'accountant' => ['cashbox.manage', 'reports.view', 'sales.view', 'suppliers.manage', 'purchases.manage', 'customers.manage'], // محاسب
+            'accountant' => ['cashbox.manage', 'reports.view', 'sales.view', 'suppliers.manage', 'purchases.manage', 'customers.manage', 'vouchers.view', 'vouchers.create', 'payvouchers.view', 'payvouchers.create'], // محاسب
         ];
 
         $labels = [

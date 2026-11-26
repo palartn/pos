@@ -104,8 +104,14 @@ class CashierShift extends Model
         $customerCash = (float) CustomerTransaction::where('shift_id', $id)
             ->where('type', 'payment')->where('payment_method', 'cash')->sum('amount');
 
+        $customerReversals = (float) CustomerTransaction::where('shift_id', $id)
+            ->where('type', 'debt')->where('payment_method', 'cash')->sum('amount');
+
         $supplierCash = (float) SupplierTransaction::where('shift_id', $id)
             ->where('type', 'payment')->where('payment_method', 'cash')->sum('amount');
+
+        $supplierReversals = (float) SupplierTransaction::where('shift_id', $id)
+            ->where('type', 'debt')->where('payment_method', 'cash')->sum('amount');
 
         $saleRefunds = (float) SaleReturn::where('shift_id', $id)->where('refund_method', 'cash')->sum('cash_refund');
 
@@ -121,11 +127,13 @@ class CashierShift extends Model
             'by_method' => $byMethod,
             'cash_sales' => $cashSales,
             'customer_cash' => $customerCash,
+            'customer_cash_reversals' => $customerReversals,
             'supplier_cash' => $supplierCash,
+            'supplier_cash_reversals' => $supplierReversals,
             'income' => $income,
             'expense' => $expense,
             'sale_refunds' => $saleRefunds,
-            'expected_cash' => round($opening + $cashSales + $customerCash + $income - $supplierCash - $expense - $saleRefunds, 2),
+            'expected_cash' => round($opening + $cashSales + $customerCash - $customerReversals + $income - $supplierCash + $supplierReversals - $expense - $saleRefunds, 2),
         ];
     }
 }
