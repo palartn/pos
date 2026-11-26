@@ -61,7 +61,7 @@ class CustomerResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('has_debt')->label('عليهم دين')->toggle()
-                    ->query(fn (Builder $query) => $query->where('balance', '>', 0)),
+                    ->query(fn (Builder $q) => $q->where('balance', '>', 0)),
                 Tables\Filters\TernaryFilter::make('is_active')->label('الحالة')
                     ->trueLabel('فعّال')->falseLabel('غير فعّال'),
             ])

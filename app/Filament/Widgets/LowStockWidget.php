@@ -35,10 +35,10 @@ class LowStockWidget extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('الصنف')->weight('bold'),
                 Tables\Columns\TextColumn::make('stock')->label('المتوفر')
-                    ->formatStateUsing(fn ($s, $record) => rtrim(rtrim(number_format((float) $s, 3, '.', ''), '0'), '.') . ' ' . $record->unit)
+                    ->formatStateUsing(fn ($state, $record) => rtrim(rtrim(number_format((float) $state, 3, '.', ''), '0'), '.') . ' ' . $record->unit)
                     ->color('danger'),
                 Tables\Columns\TextColumn::make('min_stock')->label('الحد الأدنى')
-                    ->formatStateUsing(fn ($s) => rtrim(rtrim(number_format((float) $s, 3, '.', ''), '0'), '.')),
+                    ->formatStateUsing(fn ($state) => rtrim(rtrim(number_format((float) $state, 3, '.', ''), '0'), '.')),
             ])
             ->emptyStateHeading('كل الأصناف فوق حد التنبيه')
             ->paginated([5, 10]);

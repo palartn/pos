@@ -69,7 +69,7 @@ class ProductResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('category_id')->label('التصنيف')->relationship('category', 'name'),
                 Tables\Filters\Filter::make('low_stock')->label('تحت حد التنبيه')->toggle()
-                    ->query(fn (Builder $query) => $query->whereColumn('stock', '<=', 'min_stock')),
+                    ->query(fn (Builder $q) => $q->whereColumn('stock', '<=', 'min_stock')),
                 Tables\Filters\TernaryFilter::make('is_active')->label('الحالة')->trueLabel('فعّال')->falseLabel('غير فعّال'),
             ])
             ->actions([Tables\Actions\EditAction::make()]);

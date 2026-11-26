@@ -25,9 +25,9 @@ class ItemsRelationManager extends RelationManager
             return '—';
         }
 
-        $s = rtrim(rtrim(number_format($v, 3, '.', ''), '0'), '.');
+        $formatted = rtrim(rtrim(number_format($v, 3, '.', ''), '0'), '.');
 
-        return ($s === '' || $s === '-0') ? '0' : $s;
+        return ($formatted === '' || $formatted === '-0') ? '0' : $formatted;
     }
 
     public function table(Table $table): Table

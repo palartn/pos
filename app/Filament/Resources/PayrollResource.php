@@ -52,7 +52,7 @@ class PayrollResource extends Resource
 
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with('employee'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('employee'))
             ->columns([
                 Tables\Columns\TextColumn::make('period')->label('الشهر')->sortable()->weight('bold'),
                 Tables\Columns\TextColumn::make('employee.name')->label('الموظف')->searchable(),

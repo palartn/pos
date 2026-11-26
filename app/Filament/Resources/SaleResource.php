@@ -65,7 +65,7 @@ class SaleResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['customer', 'user'])->withSum('returns', 'total'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['customer', 'user'])->withSum('returns', 'total'))
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_number')->label('رقم الفاتورة')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime('Y-m-d H:i')->sortable(),

@@ -50,7 +50,7 @@ class SaleReturnResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['sale', 'customer', 'user']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['sale', 'customer', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('return_number')->label('رقم المرتجع')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime('Y-m-d H:i')->sortable(),

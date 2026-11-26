@@ -69,7 +69,7 @@ class StockTakeResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with('warehouse')->withCount('items'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('warehouse')->withCount('items'))
             ->columns([
                 Tables\Columns\TextColumn::make('number')->label('رقم الجرد')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('بدأ في')->dateTime('Y-m-d H:i')->sortable(),

@@ -28,7 +28,7 @@ class TopDebtorsWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('name')->label('العميل')->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')->label('الهاتف')->placeholder('—'),
                 Tables\Columns\TextColumn::make('balance')->label('الدين')
-                    ->formatStateUsing(fn ($s) => '₪' . number_format((float) $s, 2))->color('danger'),
+                    ->formatStateUsing(fn ($state) => '₪' . number_format((float) $state, 2))->color('danger'),
             ])
             ->emptyStateHeading('لا توجد ديون مستحقة')
             ->paginated([5, 10]);

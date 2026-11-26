@@ -63,7 +63,7 @@ class EmployeeResource extends Resource
     {
         return $table
             ->defaultSort('name')
-            ->modifyQueryUsing(fn (Builder $q) => $q->withSum(
+            ->modifyQueryUsing(fn (Builder $query) => $query->withSum(
                 ['transactions as advances_due' => fn ($t) => $t->where('type', 'advance')->whereNull('payroll_id')],
                 'amount'
             ))

@@ -36,9 +36,9 @@ class RecentSalesWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('created_at')->label('الوقت')->dateTime('Y-m-d H:i'),
                 Tables\Columns\TextColumn::make('customer.name')->label('العميل')->placeholder('نقدي'),
                 Tables\Columns\TextColumn::make('total')->label('الإجمالي')
-                    ->formatStateUsing(fn ($s) => '₪' . number_format((float) $s, 2)),
+                    ->formatStateUsing(fn ($state) => '₪' . number_format((float) $state, 2)),
                 Tables\Columns\TextColumn::make('payment_method')->label('الدفع')
-                    ->formatStateUsing(fn ($s) => PaymentMethod::tryFrom($s)?->label() ?? $s),
+                    ->formatStateUsing(fn ($state) => PaymentMethod::tryFrom($state)?->label() ?? $state),
             ])
             ->paginated([8, 15]);
     }
