@@ -112,9 +112,9 @@ class PaymentVoucherResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $query, array $data) => $query
-                        ->when($data['from'] ?? null, fn ($query, $value) => $query->whereDate('created_at', '>=', $value))
-                        ->when($data['until'] ?? null, fn ($query, $value) => $query->whereDate('created_at', '<=', $value))),
+                    ->query(fn (Builder $q, array $data) => $q
+                        ->when($data['from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
+                        ->when($data['until'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))),
             ])
             ->actions([
                 Tables\Actions\Action::make('print')

@@ -79,7 +79,7 @@ class CashMovementResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['shift.user', 'user']))
+            ->modifyQueryUsing(fn (Builder $q) => $q->with(['shift.user', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('occurred_on')->label('التاريخ')->date('Y-m-d')->sortable(),
                 Tables\Columns\TextColumn::make('type')->label('النوع')->badge(),
@@ -110,9 +110,9 @@ class CashMovementResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $query, array $data) => $query
-                        ->when($data['from'] ?? null, fn ($query, $value) => $query->whereDate('occurred_on', '>=', $value))
-                        ->when($data['until'] ?? null, fn ($query, $value) => $query->whereDate('occurred_on', '<=', $value))),
+                    ->query(fn (Builder $q, array $data) => $q
+                        ->when($data['from'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '>=', $v))
+                        ->when($data['until'] ?? null, fn ($q, $v) => $q->whereDate('occurred_on', '<=', $v))),
             ]);
     }
 

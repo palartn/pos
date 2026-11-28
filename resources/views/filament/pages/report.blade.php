@@ -5,7 +5,9 @@
         <div class="rp-card rp-filters">
             {{ $this->form }}
             <div class="rp-actions">
-                <button type="button" class="rp-btn" onclick="window.print()">🖨️ طباعة</button>
+                {{-- يفتح صفحة طباعة مستقلة بالفلاتر الحالية --}}
+                <a class="rp-btn" href="{{ $this->printUrl() }}" target="_blank" rel="noopener"
+                   style="display:inline-block;text-decoration:none">🖨️ طباعة التقرير</a>
             </div>
         </div>
 

@@ -19,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentVoucherController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReportPrintController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -29,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
     {
         // طباعة إيصال الفاتورة (يتحقق المتحكم من الدخول والصلاحية)
         Route::middleware('web')->get('receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
+        Route::middleware('web')->get('reports-print/{report}', [ReportPrintController::class, 'show'])->name('reports.print');
         Route::middleware('web')->get('vouchers/{voucher}', [VoucherController::class, 'show'])->name('vouchers.show');
         Route::middleware('web')->get('payment-vouchers/{paymentVoucher}', [PaymentVoucherController::class, 'show'])->name('payment-vouchers.show');
     }
@@ -47,7 +49,8 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups(['المبيعات', 'الخزينة والورديات', 'المشتريات', 'العملاء والموردون', 'المخزون', 'الموظفون', 'التقارير', 'الإدارة'])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="' . asset('css/reports.css') . '?v=' . (@filemtime(public_path('css/reports.css')) ?: 1) . '">',
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/reports.css') . '?v=' . (@filemtime(public_path('css/reports.css')) ?: 1) . '">'
+                    . '<script src="' . asset('js/report-print.js') . '?v=' . (@filemtime(public_path('js/report-print.js')) ?: 1) . '"></script>',
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,

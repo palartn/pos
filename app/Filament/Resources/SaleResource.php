@@ -92,9 +92,9 @@ class SaleResource extends Resource
                         Forms\Components\DatePicker::make('from')->label('من'),
                         Forms\Components\DatePicker::make('until')->label('إلى'),
                     ])
-                    ->query(fn (Builder $q, array $d) => $q
-                        ->when($d['from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
-                        ->when($d['until'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))),
+                    ->query(fn (Builder $q, array $data) => $q
+                        ->when($data['from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
+                        ->when($data['until'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))),
             ])
             ->actions([Tables\Actions\ViewAction::make()->label('عرض')]);
     }

@@ -38,8 +38,6 @@
 .rp-table tfoot td { font-weight: 900; border-top: 2px solid var(--rp-border); border-bottom: 0; }
 .rp-empty { text-align: center !important; color: var(--rp-muted); padding: 1.5rem !important; }
 
-@media print {
-    .fi-sidebar, .fi-topbar, .fi-header, .rp-filters .rp-actions, .fi-fo-field-wrp { display: none !important; }
-    .rp-card, .rp-stat { box-shadow: none; break-inside: avoid; }
-    .fi-main { padding: 0 !important; max-width: 100% !important; }
-}
+/* غلاف المحتوى القابل للطباعة (الطباعة تتم في نافذة مخصّصة عبر report-print.js) */
+.rp-printable { display: flex; flex-direction: column; gap: 1rem; }
+.rp-print-head { display: none; }

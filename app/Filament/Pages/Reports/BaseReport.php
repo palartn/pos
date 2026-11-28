@@ -8,6 +8,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 
 /**
@@ -59,6 +60,36 @@ abstract class BaseReport extends Page implements HasForms
     }
 
     abstract protected function report(): array;
+
+    /** معرّف التقرير في رابط الطباعة (sales, profit, ...) */
+    public static function printKey(): string
+    {
+        return Str::after(static::getSlug(), 'reports/');
+    }
+
+    /** رابط صفحة طباعة مستقلة بالفلاتر الحالية */
+    public function printUrl(): string
+    {
+        $filters = array_filter($this->filters ?? [], fn ($v) => $v !== null && $v !== '');
+
+        return route('reports.print', array_merge(['report' => static::printKey()], $filters));
+    }
+
+    /** بيانات التقرير للطباعة (تُستدعى من ReportPrintController) */
+    public static function printData(array $filters): array
+    {
+        $page = app(static::class);
+        $page->filters = $filters + [
+            'from' => now()->startOfMonth()->toDateString(),
+            'until' => now()->toDateString(),
+        ];
+
+        return [
+            'title' => (string) $page->getTitle(),
+            'filters' => $page->filters,
+            'report' => $page->report(),
+        ];
+    }
 
     #[Computed]
     public function reportData(): array
