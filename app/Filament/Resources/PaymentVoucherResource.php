@@ -83,7 +83,9 @@ class PaymentVoucherResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['supplier', 'user']))
+            ->modifyQueryUsing(fn (Builder $q) => $q
+                ->setModel(new PaymentVoucher)
+                ->with(['supplier', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('number')->label('رقم السند')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime('Y-m-d H:i')->sortable(),

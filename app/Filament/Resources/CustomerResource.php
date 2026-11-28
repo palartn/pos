@@ -55,8 +55,8 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable()->sortable()->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')->label('الهاتف')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('price_level')->label('السعر')->badge()
-                    ->formatStateUsing(fn ($s) => $s === 'wholesale' ? 'جملة' : 'تجزئة')
-                    ->color(fn ($s) => $s === 'wholesale' ? 'info' : 'gray'),
+                    ->formatStateUsing(fn ($state) => $state === 'wholesale' ? 'جملة' : 'تجزئة')
+                    ->color(fn ($state) => $state === 'wholesale' ? 'info' : 'gray'),
                 Tables\Columns\TextColumn::make('balance')->label('الدين المستحق')->sortable()
                     ->formatStateUsing(fn ($state) => Ledger::money($state))
                     ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success')

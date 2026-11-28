@@ -79,7 +79,9 @@ class CashMovementResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['shift.user', 'user']))
+            ->modifyQueryUsing(fn (Builder $q) => $q
+                ->setModel(new CashMovement)
+                ->with(['shift.user', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('occurred_on')->label('التاريخ')->date('Y-m-d')->sortable(),
                 Tables\Columns\TextColumn::make('type')->label('النوع')->badge(),
