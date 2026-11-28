@@ -84,7 +84,9 @@ class VoucherResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['customer', 'user']))
+            ->modifyQueryUsing(fn (Builder $q) => $q
+                ->setModel(new Voucher)
+                ->with(['customer', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('number')->label('رقم السند')->searchable()->weight('bold'),
                 Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime('Y-m-d H:i')->sortable(),
