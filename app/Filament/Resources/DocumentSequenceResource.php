@@ -7,6 +7,7 @@ use App\Filament\Resources\DocumentSequenceResource\Pages;
 use App\Models\DocumentSequence;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -48,10 +49,12 @@ class DocumentSequenceResource extends Resource
                 ->required()->maxLength(10),
             Forms\Components\TextInput::make('padding')->label('عدد خانات الرقم')
                 ->numeric()->integer()->minValue(4)->maxValue(10)->required(),
+            Forms\Components\Toggle::make('yearly_reset')->label('ترقيم سنوي')->live()
+                ->helperText('يبدأ من 1 كل سنة ويظهر العام في الرقم (مثل INV-2026-000001)'),
             Forms\Components\TextInput::make('next_number')->label('الرقم التالي')
                 ->numeric()->integer()->required()
-                ->minValue(fn ($record) => (int) $record?->next_number)
-                ->helperText('يمكن زيادته فقط، حتى لا يتكرر رقم صدر سابقاً'),
+                ->minValue(fn ($record, Get $get) => $get('yearly_reset') ? 1 : (int) $record?->next_number)
+                ->helperText('في الترقيم العادي يمكن زيادته فقط؛ وإن كان الرقم مستخدماً يتخطاه النظام تلقائياً'),
         ])->columns(3);
     }
 
@@ -62,11 +65,19 @@ class DocumentSequenceResource extends Resource
                 Tables\Columns\TextColumn::make('label')->label('المستند')->weight('bold'),
                 Tables\Columns\TextColumn::make('prefix')->label('البادئة'),
                 Tables\Columns\TextColumn::make('padding')->label('الخانات'),
+                Tables\Columns\IconColumn::make('yearly_reset')->label('سنوي')->boolean(),
                 Tables\Columns\TextColumn::make('next_number')->label('الرقم التالي'),
                 Tables\Columns\TextColumn::make('example')->label('الرقم القادم سيكون')
                     ->state(fn ($record) => $record->format($record->next_number)),
             ])
-            ->actions([Tables\Actions\EditAction::make()]);
+            ->actions([
+                Tables\Actions\EditAction::make()->mutateFormDataUsing(function (array $data) {
+                    // عند التفعيل يُحتسب العدّاد على السنة الحالية فيُحترم الرقم المُدخل
+                    $data['period'] = ! empty($data['yearly_reset']) ? (int) now()->format('Y') : null;
+
+                    return $data;
+                }),
+            ]);
     }
 
     public static function getPages(): array
